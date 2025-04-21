@@ -1,26 +1,26 @@
 const express = require("express");
 const Product = require("../models/Product");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, admin } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 //@route POST /api/products
 //@desc Creating A New Product
 //@Access Private/Admin
-router.post("/", protect, async (req, res) => {
+router.post("/", protect, admin, async (req, res) => {
   try {
     const {
       name,
       description,
       price,
       discountPrice,
-      CountInStock,
+      countInStock,
       category,
       brand,
       sizes,
       colors,
       collections,
-      materials,
+      material,
       gender,
       images,
       isFeatured,
@@ -36,13 +36,13 @@ router.post("/", protect, async (req, res) => {
       description,
       price,
       discountPrice,
-      CountInStock,
+      countInStock,
       category,
       brand,
       sizes,
       colors,
       collections,
-      materials,
+      material,
       gender,
       images,
       isFeatured,
@@ -56,6 +56,93 @@ router.post("/", protect, async (req, res) => {
 
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+//@routes PUT /api/products/:id
+//@desc Update An Existing Product ID
+//@access Private/Admin
+router.put("/:id", protect, admin, async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      price,
+      discountPrice,
+      countInStock,
+      category,
+      brand,
+      sizes,
+      colors,
+      collections,
+      material,
+      gender,
+      images,
+      isFeatured,
+      isPublished,
+      tags,
+      dimensions,
+      weight,
+      sku,
+    } = req.body;
+
+    //Finding The Product By ID
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      //Update Product Fields
+      product.name = name || product.name;
+      product.description = description || product.description;
+      product.price = price || product.price;
+      product.discountPrice = discountPrice || product.discountPrice;
+      product.countInStock = countInStock || product.countInStock;
+      product.category = category || product.category;
+      product.brand = brand || product.brand;
+      product.sizes = sizes || product.sizes;
+      product.colors = colors || product.colors;
+      product.collections = collections || product.collections;
+      product.material = material || product.material;
+      product.gender = gender || product.gender;
+      product.images = images || product.images;
+      product.isFeatured =
+        isFeatured !== undefined ? isFeatured : product.isFeatured;
+      product.isPublished =
+        isPublished !== undefined ? isPublished : product.isPublished;
+      product.tags = tags || product.tags;
+      product.dimensions = dimensions || product.dimensions;
+      product.weight = weight || product.weight;
+      product.sku = sku || product.sku;
+
+      //Save The Updated Product
+      const updatedProduct = await product.save();
+      res.json(updatedProduct);
+    } else {
+      res.status(404).json({ message: "Product Not Found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+//@route DELETE /api/products/:id
+//@desc Delete A Product By ID
+//@acess Private/Admin
+router.delete("/:id", protect, admin, async (req, res) => {
+  try {
+    //Find The Product By ID
+    const product = await Product.findById(req.params.id);
+
+    if (product) {
+      //Remove The Product From DB
+      await product.deleteOne();
+      res.json({ message: "Product Removed" });
+    } else {
+      res.status(404).json({ message: "Product Not Found" });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
