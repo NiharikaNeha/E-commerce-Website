@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const Product = require("./models/Product");
 const User = require("./models/User");
-const products = reequire("./data/products");
+const products = require("./data/products");
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ const seedData = async () => {
     const userID = createdUser._id;
 
     const sampleProducts = products.map((product) => {
-        return {...product, userID}
+        return {...product, user: userID}
     })
 
     //Insert The Products In The DB
@@ -37,5 +37,10 @@ const seedData = async () => {
     console.log("Product Data Seeded Successfully!")
     process.exit();
 
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error Seeding The Data:", error);
+    process.exit(1);
+  }
 };
+
+seedData();
