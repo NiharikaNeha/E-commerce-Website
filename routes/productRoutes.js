@@ -242,7 +242,39 @@ router.get("/", async (req, res) => {
   }
 });
 
-//@route GET /api/products.:id
+//@route GET /api/products/best-seller
+//@desc Retrieving The Product With Highest Rating
+//@Access Public
+router.get("/best-seller", async (req, res) => {
+  try {
+    const bestSeller = await Product.findOne().sort({ rating: -1 });
+
+    if (bestSeller) {
+      res.json(bestSeller);
+    } else {
+      res.status(404).json({ message: "No Best Seller Found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Server Error" });
+  }
+});
+
+//@route GET /api/products/new-arrivals
+//@desc Retrieving Latest 8 Products - Creation Date
+//@Access Public
+router.get("/new-arrivals", async (req, res) => {
+  try {
+    //Fetch Latest 8 Products
+    const newArrivals = await Product.find().sort({ createdAt: -1 }).limit(8);
+    res.json(newArrivals);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Server Error" });
+  }
+});
+
+//@route GET /api/products/:id
 //@desc Get A Single Product By ID
 //@Access Public
 router.get("/:id", async (req, res) => {
@@ -253,6 +285,32 @@ router.get("/:id", async (req, res) => {
     } else {
       res.status(404).json({ message: "Product Not Found" });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server Error");
+  }
+});
+
+//@route GET /api/products/simliar/:id
+//@desc Retrieve Similar Products Based On The Current Product's Gender And Category
+//@Access Public
+router.get("/similar/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product Not Found" });
+    }
+
+    const similarProducts = await Product.find({
+      _id: { $ne: id }, //Exclude The Current Product ID
+      gender: product.gender,
+      category: product.category,
+    }).limit(4);
+
+    res.json(similarProducts);
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
