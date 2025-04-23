@@ -38,8 +38,8 @@ userSchema.pre("save", async function (next) {
 });
 
 // Matching User Entry Password To Hashed Password
-userSchema.methods.matchPassword = async function (enteredPAssword) {
-  return await bcrypt.compare(enteredPAssword, this.password);
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 module.exports = mongoose.model("User", userSchema);
